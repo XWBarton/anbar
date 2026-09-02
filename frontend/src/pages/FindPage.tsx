@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { Card, Empty, Input, List, Space, Spin, Tag, Typography } from 'antd'
 import { useQuery } from '@tanstack/react-query'
 import { search } from '../api/search'
-import ItemTypeTag from '../components/ItemTypeTag'
+import ItemTypeTag, { SearchKindTag } from '../components/ItemTypeTag'
 import StateTag from '../components/StateTag'
 import type { SearchResult } from '../types'
 
@@ -25,7 +25,8 @@ export default function FindPage() {
     navigate(
       r.kind === 'primer' ? `/primers/${r.id}`
       : r.kind === 'reagent' ? `/reagents/${r.id}`
-      : `/extracts/${r.id}`
+      : r.kind === 'extract' ? `/extracts/${r.id}`
+      : `/boxes/${r.id}`
     )
 
   return (
@@ -58,7 +59,7 @@ export default function FindPage() {
               renderItem={(r) => (
                 <List.Item key={`${r.kind}-${r.id}`}>
                   <Space align="center" style={{ marginBottom: 8 }}>
-                    <ItemTypeTag type={r.kind} />
+                    <SearchKindTag kind={r.kind} />
                     <a style={{ fontSize: 16, fontWeight: 600 }} onClick={() => openRecord(r)}>
                       {r.name}
                     </a>
@@ -75,7 +76,15 @@ export default function FindPage() {
                         <List.Item style={{ paddingLeft: 0, opacity: t.state === 'empty' ? 0.5 : 1 }}>
                           <Space wrap>
                             <StateTag state={t.state} />
-                            <Text strong>{t.location}</Text>
+                            {r.kind === 'box' && <ItemTypeTag type={t.item_type} />}
+                            {r.kind === 'box' && <Text>{t.name}</Text>}
+                            {t.box_id ? (
+                              <a onClick={() => navigate(`/boxes/${t.box_id}?item=${t.id}`)}>
+                                <Text strong>{t.location}</Text>
+                              </a>
+                            ) : (
+                              <Text strong>{t.location}</Text>
+                            )}
                             {t.label && <Tag>{t.label}</Tag>}
                             {t.owner_display && <Text type="secondary">{t.owner_display}</Text>}
                           </Space>

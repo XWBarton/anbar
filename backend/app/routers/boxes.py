@@ -27,10 +27,11 @@ def _check_position(db: Session, freezer_id, shelf, slot, exclude_id=None):
 @router.get("/", response_model=List[BoxRead])
 def list_boxes(
     freezer_id: Optional[int] = None,
+    q: Optional[str] = None,
     db: Session = Depends(get_db),
     _: User = Depends(get_current_user),
 ):
-    return [crud.to_read(db, b) for b in crud.get_boxes(db, freezer_id=freezer_id)]
+    return [crud.to_read(db, b) for b in crud.get_boxes(db, freezer_id=freezer_id, q=q)]
 
 
 @router.post("/", response_model=BoxRead)

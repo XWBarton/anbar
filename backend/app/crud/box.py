@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session, joinedload
 
 from ..models.box import Box
 from ..models.stored_item import StoredItem
+from ..models.user import User
 from ..schemas.box import BoxCreate, BoxRead, BoxUpdate
 from ..utils.location import describe_box
 
@@ -11,10 +12,18 @@ def _loaded(query):
     return query.options(joinedload(Box.freezer), joinedload(Box.owner))
 
 
-def get_boxes(db: Session, freezer_id: Optional[int] = None) -> List[Box]:
+def get_boxes(db: Session, freezer_id: Optional[int] = None, q: Optional[str] = None) -> List[Box]:
     query = _loaded(db.query(Box))
     if freezer_id is not None:
         query = query.filter(Box.freezer_id == freezer_id)
+    if q:
+        like = f"%{q}%"
+        query = query.outerjoin(User, Box.owner_id == User.id).filter(
+            Box.name.ilike(like)
+            | Box.owner_name.ilike(like)
+            | Box.notes.ilike(like)
+            | User.full_name.ilike(like)
+        )
     return query.order_by(Box.name).all()
 
 

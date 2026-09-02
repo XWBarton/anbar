@@ -183,15 +183,20 @@ export interface LookupOption {
 
 export interface SearchTube {
   id: number
+  item_type: ItemType
+  name?: string
   label?: string
   state: string
   location: string
   slot_label?: string
+  box_id?: number
   owner_display?: string
 }
 
+export type SearchKind = ItemType | 'box'
+
 export interface SearchResult {
-  kind: ItemType
+  kind: SearchKind
   id: number
   name: string
   subtitle: string

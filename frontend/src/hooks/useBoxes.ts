@@ -4,8 +4,8 @@ import {
 } from '../api/boxes'
 import type { Box } from '../types'
 
-export function useBoxes(freezerId?: number) {
-  return useQuery({ queryKey: ['boxes', freezerId], queryFn: () => getBoxes(freezerId) })
+export function useBoxes(freezerId?: number, q?: string) {
+  return useQuery({ queryKey: ['boxes', freezerId, q], queryFn: () => getBoxes(freezerId, q) })
 }
 
 export function useBox(id: number) {

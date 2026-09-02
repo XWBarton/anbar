@@ -1,9 +1,9 @@
 import client from './client'
 import type { Box, BoxMap } from '../types'
 
-export const getBoxes = async (freezerId?: number): Promise<Box[]> => {
+export const getBoxes = async (freezerId?: number, q?: string): Promise<Box[]> => {
   const { data } = await client.get<Box[]>('/boxes/', {
-    params: freezerId ? { freezer_id: freezerId } : {},
+    params: { freezer_id: freezerId, q: q || undefined },
   })
   return data
 }

@@ -2,6 +2,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
+from ..crud import box as box_crud
 from ..crud import extract as extract_crud
 from ..crud import primer as primer_crud
 from ..crud import reagent as reagent_crud
@@ -13,17 +14,23 @@ router = APIRouter(prefix="/search", tags=["search"])
 
 
 def _tubes(db: Session, **filters):
-    return [
-        {
+    tubes = []
+    for i in item_crud.get_items(db, include_empty=True, **filters):
+        read = item_crud.to_read(i)
+        tubes.append({
             "id": i.id,
+            "item_type": i.item_type,
+            "name": read.name,
             "label": i.label,
             "state": i.state,
-            "location": item_crud.to_read(i).location,
-            "slot_label": item_crud.to_read(i).slot_label,
+            "location": read.location,
+            "slot_label": read.slot_label,
+            "box_id": i.box_id,
             "owner_display": item_crud.owner_display(i),
-        }
-        for i in item_crud.get_items(db, include_empty=True, **filters)
-    ]
+        })
+    # Slot order within a box reads the way the physical grid does.
+    tubes.sort(key=lambda t: (t["box_id"] is None, t["slot_label"] or ""))
+    return tubes
 
 
 @router.get("/")
@@ -34,12 +41,24 @@ def search(
     _: User = Depends(get_current_user),
 ):
     """One box, one question: where is it? Searches all three item types and
-    answers with every tube and its resolved location."""
+    box names/owners, and answers with every tube and its resolved location."""
     q = (q or "").strip()
     if len(q) < 2:
         return {"query": q, "results": []}
 
     results = []
+
+    if item_type in (None, "box"):
+        for b in box_crud.get_boxes(db, q=q):
+            read = box_crud.to_read(db, b)
+            results.append({
+                "kind": "box",
+                "id": b.id,
+                "name": b.name,
+                "subtitle": f"{read.location} · {read.filled}/{read.capacity} slots"
+                + (f" · {read.owner_name}" if read.owner_name else ""),
+                "tubes": _tubes(db, box_id=b.id),
+            })
 
     if item_type in (None, "primer"):
         for p in primer_crud.get_primers(db, q=q):

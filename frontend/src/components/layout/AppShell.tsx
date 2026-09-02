@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { Layout, Menu, Button, Typography, Space, Grid } from 'antd'
 import {
+  AppstoreOutlined,
   DashboardOutlined,
   ExperimentOutlined,
   ExportOutlined,
@@ -25,6 +26,7 @@ const { useBreakpoint } = Grid
 const menuItems = [
   { key: '/dashboard', icon: <DashboardOutlined />, label: 'Dashboard' },
   { key: '/find', icon: <SearchOutlined />, label: 'Find' },
+  { key: '/boxes', icon: <AppstoreOutlined />, label: 'Boxes' },
   { key: '/primers', icon: <ExperimentOutlined />, label: 'Primers' },
   { key: '/reagents', icon: <MedicineBoxOutlined />, label: 'Reagents' },
   { key: '/extracts', icon: <GoldOutlined />, label: 'Extracted DNA' },
@@ -46,7 +48,7 @@ export default function AppShell() {
 
   const selectedKey =
     [...allItems, ...bottomItems].find((item) => location.pathname.startsWith(item.key))?.key ||
-    (location.pathname.startsWith('/boxes') ? '/freezers' : '/dashboard')
+    '/dashboard'
 
   return (
     <Layout style={{ minHeight: '100vh' }}>

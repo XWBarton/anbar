@@ -16,6 +16,7 @@ import ExtractsPage from './pages/ExtractsPage'
 import ExtractDetailPage from './pages/ExtractDetailPage'
 import FreezersPage from './pages/FreezersPage'
 import FreezerDetailPage from './pages/FreezerDetailPage'
+import BoxesPage from './pages/BoxesPage'
 import BoxDetailPage from './pages/BoxDetailPage'
 import ExportPage from './pages/ExportPage'
 import AdminPage from './pages/AdminPage'
@@ -39,6 +40,7 @@ function App() {
             <Route index element={<Navigate to="/dashboard" replace />} />
             <Route path="dashboard" element={<DashboardPage />} />
             <Route path="find" element={<FindPage />} />
+            <Route path="boxes" element={<BoxesPage />} />
             <Route path="primers" element={<PrimersPage />} />
             <Route path="primers/:id" element={<PrimerDetailPage />} />
             <Route path="reagents" element={<ReagentsPage />} />

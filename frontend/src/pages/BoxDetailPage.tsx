@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import {
   Button, Card, Descriptions, Drawer, Empty, Popconfirm, Segmented, Select, Space,
   Tag, Typography, message,
@@ -23,6 +23,7 @@ export default function BoxDetailPage() {
   const { id } = useParams()
   const boxId = Number(id)
   const navigate = useNavigate()
+  const [searchParams, setSearchParams] = useSearchParams()
   const { data: map, isLoading } = useBoxMap(boxId)
   const deleteBox = useDeleteBox()
   const deleteItem = useDeleteItem()
@@ -33,6 +34,18 @@ export default function BoxDetailPage() {
   const [editTarget, setEditTarget] = useState<StoredItem | null>(null)
   const [addType, setAddType] = useState<ItemType>('primer')
   const [addParentId, setAddParentId] = useState<number | null>(null)
+
+  // A Find result can deep-link straight to one tube: /boxes/:id?item=<id>
+  useEffect(() => {
+    const itemId = searchParams.get('item')
+    if (!itemId || !map) return
+    const targetId = Number(itemId)
+    const cell = map.cells.find((c) => c.item?.id === targetId)
+    const unplaced = map.unplaced.find((u) => u.id === targetId)
+    if (cell) setSelected(cell)
+    else if (unplaced) setSelected({ row: -1, col: -1, slot_label: 'No slot', item: unplaced })
+    setSearchParams((prev) => { prev.delete('item'); return prev }, { replace: true })
+  }, [map, searchParams, setSearchParams])
 
   if (isLoading || !map) return <Card loading />
 
@@ -91,7 +104,11 @@ export default function BoxDetailPage() {
         <Card title="In this box without a slot" style={{ marginTop: 16 }} size="small">
           <Space wrap>
             {map.unplaced.map((u) => (
-              <Tag key={u.id} style={{ padding: '4px 8px' }}>
+              <Tag
+                key={u.id}
+                style={{ padding: '4px 8px', cursor: 'pointer' }}
+                onClick={() => setSelected({ row: -1, col: -1, slot_label: 'No slot', item: u })}
+              >
                 {u.name} <StateTag state={u.state} />
               </Tag>
             ))}
@@ -100,7 +117,7 @@ export default function BoxDetailPage() {
       )}
 
       <Drawer
-        title={selected ? `Slot ${selected.slot_label}` : ''}
+        title={selected ? (selected.row === -1 ? 'No slot assigned' : `Slot ${selected.slot_label}`) : ''}
         open={!!selected}
         onClose={() => setSelected(null)}
         width={420}
