@@ -22,6 +22,7 @@ frontend/.vite/
 *.db-shm
 *.db-wal
 *.sqlite
+/backups/
 
 # OS
 .DS_Store
