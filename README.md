@@ -132,4 +132,17 @@ npm install && npm run dev
 
 FastAPI · SQLAlchemy 2 · SQLite (WAL) · JWT auth · React 18 · Vite · Ant Design ·
 TanStack Query · nginx · Docker — the same stack as the rest of the family.
-# update-script live test Wed  2 Sep 2026 11:44:11 AWST
+
+---
+
+## Updating a running deployment
+
+```bash
+./scripts/update.sh
+```
+
+Backs up the database (consistent copy, taken with the backend briefly paused), pulls the
+latest code, builds the new images while the old containers keep serving traffic, then swaps
+them in. Named volumes are never touched, so existing data survives regardless — the backup is
+belt-and-suspenders. It also compares `/api/setup/status` before and after and refuses to finish
+if it ever looks like setup got reset, rather than letting that pass silently.
