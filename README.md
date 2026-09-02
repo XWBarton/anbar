@@ -132,3 +132,4 @@ npm install && npm run dev
 
 FastAPI · SQLAlchemy 2 · SQLite (WAL) · JWT auth · React 18 · Vite · Ant Design ·
 TanStack Query · nginx · Docker — the same stack as the rest of the family.
+# update-script live test Wed  2 Sep 2026 11:44:11 AWST

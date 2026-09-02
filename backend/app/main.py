@@ -8,9 +8,11 @@ from sqlalchemy import text
 from .config import settings
 from .crud.user import create_user, get_user_by_username
 from .database import Base, SessionLocal, engine
-from .models import (  # noqa: F401 — imported so create_all sees every table
+from .models import (  # noqa: F401 — most imported so create_all sees every table
     AppSetting, Box, Extract, Freezer, LookupOption, Primer, Reagent, StoredItem, User,
 )
+
+SETUP_COMPLETED_KEY = "setup_completed"
 from .routers import (
     admin, auth, boxes, export, extracts, freezers, integration, items,
     lookups, primers, reagents, search, setup, users,
@@ -46,9 +48,46 @@ def run_migrations():
                 print(f"[anbar] Migration: added {table}.{column}")
 
 
+def _setup_completed(db) -> bool:
+    return db.query(AppSetting).filter(AppSetting.key == SETUP_COMPLETED_KEY).first() is not None
+
+
+def migrate_setup_completed_flag():
+    """Infer 'setup already happened' for instances deployed before this flag
+    existed, so upgrading never re-seeds a default admin on an already-live
+    install. A real admin (any username other than the configured default)
+    is proof setup ran; any leftover default-admin account from a restart
+    under the old logic is a phantom with a known password, so it's removed
+    rather than left as a standing login."""
+    db = SessionLocal()
+    try:
+        if _setup_completed(db):
+            return
+        real_admin_exists = (
+            db.query(User)
+            .filter(User.username != settings.FIRST_ADMIN_USERNAME, User.is_admin == True)  # noqa: E712
+            .first()
+            is not None
+        )
+        if not real_admin_exists:
+            return
+        phantoms = db.query(User).filter(User.username == settings.FIRST_ADMIN_USERNAME).all()
+        for phantom in phantoms:
+            db.delete(phantom)
+        db.add(AppSetting(key=SETUP_COMPLETED_KEY, value="true"))
+        db.commit()
+        if phantoms:
+            print(f"[anbar] Migration: removed {len(phantoms)} leftover default-admin account(s)")
+        print("[anbar] Migration: marked setup as already completed")
+    finally:
+        db.close()
+
+
 def seed_default_admin():
     db = SessionLocal()
     try:
+        if _setup_completed(db):
+            return
         if not get_user_by_username(db, settings.FIRST_ADMIN_USERNAME):
             create_user(db, UserCreate(
                 username=settings.FIRST_ADMIN_USERNAME,
@@ -115,6 +154,7 @@ app.include_router(integration.router)
 def on_startup():
     create_tables()
     run_migrations()
+    migrate_setup_completed_flag()
     seed_default_admin()
     seed_lookups()
 
