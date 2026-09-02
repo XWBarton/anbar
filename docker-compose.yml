@@ -1,0 +1,39 @@
+version: "3.9"
+
+services:
+  backend:
+    build: ./backend
+    environment:
+      - DATABASE_URL=${DATABASE_URL:-sqlite:////data/anbar.db}
+      - SECRET_KEY=${SECRET_KEY:-changeme-use-a-long-random-secret-key-in-production}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=${ACCESS_TOKEN_EXPIRE_MINUTES:-480}
+      - FIRST_ADMIN_USERNAME=${FIRST_ADMIN_USERNAME:-admin}
+      - FIRST_ADMIN_PASSWORD=${FIRST_ADMIN_PASSWORD:-changeme123}
+      - FIRST_ADMIN_EMAIL=${FIRST_ADMIN_EMAIL:-admin@example.com}
+      - FIRST_ADMIN_FULL_NAME=${FIRST_ADMIN_FULL_NAME:-Administrator}
+      - ELEMENTA_URL=${ELEMENTA_URL:-}
+      - TESSERA_URL=${TESSERA_URL:-}
+      # For same-server / Cloudflare-tunnel deployments: set these to the internal
+      # ports the siblings are reachable on from inside Docker (e.g.
+      # http://host.docker.internal:8231 for Elementa, :8520 for Tessera) so
+      # backend→backend calls bypass the public tunnel.
+      - ELEMENTA_INTERNAL_URL=${ELEMENTA_INTERNAL_URL:-}
+      - TESSERA_INTERNAL_URL=${TESSERA_INTERNAL_URL:-}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - anbar_data:/data
+    expose:
+      - "8000"
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "8410:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  anbar_data:

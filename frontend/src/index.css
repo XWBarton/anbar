@@ -1,0 +1,84 @@
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  font-family: 'Lora', Georgia, 'Times New Roman', serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3,
+.ant-typography h1,
+.ant-typography h2,
+.ant-typography h3 {
+  font-family: 'Playfair Display', Georgia, serif !important;
+  letter-spacing: -0.01em;
+}
+
+.ant-menu-item,
+.ant-menu-title-content {
+  font-family: 'Lora', Georgia, serif;
+}
+
+.brand-title {
+  font-family: 'Playfair Display', Georgia, serif;
+  letter-spacing: -0.02em;
+}
+
+/* ── Box and freezer maps ─────────────────────────────────────── */
+
+.grid-cell {
+  border: 1px solid #E5D3D1;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #fff;
+  transition: box-shadow 0.12s, transform 0.12s;
+  overflow: hidden;
+  text-align: center;
+}
+
+.grid-cell:hover {
+  box-shadow: 0 2px 8px rgba(140, 47, 57, 0.18);
+  transform: translateY(-1px);
+}
+
+.grid-cell.is-empty {
+  background: #FCFAFA;
+  border-style: dashed;
+  color: #C9BDBC;
+}
+
+.grid-cell.is-selected {
+  outline: 2px solid #8C2F39;
+  outline-offset: -2px;
+}
+
+.grid-cell .cell-label {
+  font-size: 10px;
+  line-height: 1.1;
+  color: #8a7b7a;
+}
+
+.grid-cell .cell-name {
+  font-size: 11px;
+  line-height: 1.15;
+  font-weight: 600;
+  padding: 0 2px;
+  word-break: break-word;
+}
+
+.grid-axis {
+  font-size: 11px;
+  color: #a3908f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* A tube marked empty is history, not stock — it reads as faded everywhere. */
+.state-empty td,
+.row-empty td {
+  opacity: 0.5;
+}
